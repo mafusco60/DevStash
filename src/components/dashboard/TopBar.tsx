@@ -1,11 +1,23 @@
-import { FolderPlus, Plus, Search } from "lucide-react";
+import { FolderPlus, PanelLeft, Plus, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export function TopBar() {
+interface TopBarProps {
+  onToggleSidebar?: () => void;
+}
+
+export function TopBar({ onToggleSidebar }: TopBarProps) {
   return (
     <header className="flex h-14 items-center gap-3 border-b border-border bg-background px-4">
+      <button
+        type="button"
+        onClick={onToggleSidebar}
+        aria-label="Toggle sidebar"
+        className="grid size-9 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+      >
+        <PanelLeft className="size-4" />
+      </button>
       <div className="relative flex-1 max-w-2xl">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
