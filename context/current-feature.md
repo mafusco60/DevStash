@@ -1,24 +1,12 @@
 # Current Feature
 
-Dashboard UI Phase 3 — build out the main area: 4 stats cards, recent collections, pinned items, and 10 most recent items. See [dashboard-phase-3-spec.md](features/dashboard-phase-3-spec.md).
+_None — ready for the next phase._
 
 ## Status
 
-In progress
-
 ## Goals
 
-- 4 stats cards at the top: total items, collections, favorite items, favorite collections
-- Recent collections section
-- Pinned items section
-- 10 most recent items section
-
 ## Notes
-
-- Reference screenshot: [dashboard-ui-main.png](screenshots/dashboard-ui-main.png)
-- Mock data available at [src/lib/mock-data.ts](../src/lib/mock-data.ts) — import directly until DB is wired up
-- Phase 1 spec: [dashboard-phase-1-spec.md](features/dashboard-phase-1-spec.md)
-- Phase 2 spec: [dashboard-phase-2-spec.md](features/dashboard-phase-2-spec.md)
 
 ## History
 
@@ -27,3 +15,4 @@ In progress
 - 2026-05-16 — Initial Next.js and Tailwind setup; stripped Create Next App boilerplate, added project context docs, pushed to `origin/main`.
 - 2026-05-16 — Dashboard UI Phase 1 complete on branch `lesson-02-dashboard-phase-1`: initialized shadcn/ui (Button, Input), set dark mode as default in root layout, added `/dashboard` route with sidebar/main `<h2>` placeholders and a display-only top bar (search input with ⌘ K hint, New Collection, New Item).
 - 2026-05-16 — Dashboard UI Phase 2 complete: collapsible `Sidebar` with `Types` section (item-type links to `/items/<name>`), `Collections` section split into Favorites and Most Recent, user avatar footer (initials + name + email + settings); `DashboardShell` client wrapper owns sidebar state; `TopBar` got a `PanelLeft` toggle; mobile renders as an overlay drawer with backdrop. Swapped Geist Sans for Poppins (`--font-poppins` wired into `--font-sans`/`--font-heading`); fixed stale Turbopack cache that was stripping `:root`/`.dark` theme vars and breaking dark mode.
+- 2026-05-17 — Dashboard UI Phase 3 complete on branch `lesson-04-dashboard-phase-3`: built `DashboardMain` rendering 4 `StatsCards` (items / collections / favorite items / favorite collections), a `CollectionCard` grid, a `Pinned` section, and a `Recent Items` section (top 10 by `updatedAt`); shared `typeIconsBySlug` extracted to `src/lib/type-icons.ts`; hover state on interactive cards uses `hover:border-foreground/30`. Sidebar polish: mobile drawer auto-closes on link tap via `matchMedia`, `recentCollections` now actually sorted by `updatedAt` (added to `MockCollection`), `aria-label` moved from `<aside>` to inner `<nav>`, settings cog converted to a `Link`, and `SidebarSection` switched to native `<details>`/`<summary>` disclosure to drop `useState` + `aria-expanded`.
