@@ -1,56 +1,42 @@
-# DevStash — Project Overview
+## DevStash Project Specifications
+
+🚀 Centralized Developer Knowledge Hub
+
+---
+
+## DevStash Project Specifications
 
 🚀 **Centralized Developer Knowledge Hub** for code snippets, AI prompts, docs, commands & more.
 
-> **Status:** In planning · Ready for environment setup & UI scaffolding
-> **Tagline:** *Store Smarter. Build Faster.*
+---
+
+## 📌 Problem (Core Idea)
+
+Developers keep their essentials scattered:
+
+- Code snippets in VS Code or Notion
+- AI prompts in chats
+- Context files buried in projects
+- Useful links in bookmarks
+- Docs in random folders
+- Commands in .txt files
+- Project templates in GitHub gists
+- Terminal commands in bash history
+
+This creates **context switching, lost knowledge** and **inconsistent workflows**.
+
+➡️ **DevStash provides ONE searchable, AI‑enhanced hub for all dev knowledge & resources.**
 
 ---
 
-## 📑 Table of Contents
+## 🧑‍💻 Users
 
-1. [Problem](#-problem)
-2. [Target Users](#-target-users)
-3. [Core Features](#-core-features)
-4. [Data Model](#️-data-model-rough-prisma-draft)
-5. [Tech Stack](#-tech-stack)
-6. [Monetization](#-monetization)
-7. [UI / UX](#-ui--ux)
-8. [Architecture Diagrams](#-architecture-diagrams)
-9. [Development Workflow](#️-development-workflow-for-course)
-10. [Roadmap](#-roadmap)
-
----
-
-## 🎯 Problem
-
-Developers keep their essentials scattered across too many tools:
-
-| 📍 Where it lives today | 🧩 What gets stored                  |
-| ----------------------- | ------------------------------------ |
-| VS Code / Notion        | Code snippets                        |
-| ChatGPT / Claude chats  | AI prompts                           |
-| Random project folders  | Context files                        |
-| Browser bookmarks       | Useful links                         |
-| `~/Downloads` or Drive  | Docs, references                     |
-| `.txt` files            | CLI commands, one-liners             |
-| GitHub gists            | Project templates, boilerplates      |
-| Bash history            | Terminal commands you'll never find  |
-
-The result: **context switching, lost knowledge, and inconsistent workflows.**
-
-➡️ **DevStash gives developers ONE searchable, AI-enhanced hub for all of it.**
-
----
-
-## 🧑‍💻 Target Users
-
-| Persona                    | Core Needs                                   |
-| -------------------------- | -------------------------------------------- |
-| 👨‍💻 Everyday Developer       | Quick access to snippets, commands, links    |
-| 🤖 AI-First Developer       | Store prompts, workflows, contexts           |
-| 🎓 Content Creator / Educator | Save course notes, reusable code examples  |
-| 🧱 Full-Stack Builder       | Patterns, boilerplates, API references       |
+| Persona                    | Needs                                     |
+| -------------------------- | ----------------------------------------- |
+| Everyday Developer         | Quick access to snippets, commands, links |
+| AI‑First Developer         | Store prompts, workflows, contexts        |
+| Content Creator / Educator | Save course notes, reusable code          |
+| Full‑Stack Builder         | Patterns, boilerplates, API references    |
 
 ---
 
@@ -58,66 +44,66 @@ The result: **context switching, lost knowledge, and inconsistent workflows.**
 
 ### A) Items & System Item Types
 
-Each item belongs to one built-in type:
+Items can belong to one of the following built‑in types:
 
-| Icon | Type    | Example                            |
-| ---- | ------- | ---------------------------------- |
-| 🧩   | Snippet | `useDebounce` React hook           |
-| 💬   | Prompt  | "Senior code reviewer" system msg  |
-| 📝   | Note    | API design rationale               |
-| ⌨️    | Command | `docker compose up --build -d`     |
-| 📎   | File    | `.env.example`, configs            |
-| 🖼️    | Image   | Architecture diagram screenshot    |
-| 🔗   | URL     | Reference article, RFC link        |
+- Snippet
+- Prompt
+- Note
+- Command
+- File
+- Image
+- URL
 
-> **Pro tier** can define custom types (e.g. *Recipe*, *Migration*, *Regex*).
+Custom types allowed for Pro users.
 
 ### B) Collections
 
-Group items together — **mixed types allowed** in a single collection.
+Organize items—mixed item types allowed.
 
-Examples: *React Patterns*, *Context Files for Cursor*, *Python One-Liners*, *Onboarding Docs*.
+Examples:
+
+- React Patterns
+- Context Files
+- Python Snippets
 
 ### C) Search
 
-Full-text search across:
+Full‑text search across:
 
-- ✅ Content
-- ✅ Tags
-- ✅ Titles
-- ✅ Types
+- Content
+- Tags
+- Titles
+- Types
 
 ### D) Authentication
 
-- 📧 Email + password
-- 🐙 GitHub OAuth
+- Email + Password
+- GitHub OAuth
 
 ### E) Additional Features
 
-- ⭐ Favorites & pinned items
-- 🕒 Recently used
-- 📥 Import from files
-- 📄 Markdown editor for text items
-- 🗃️ File uploads (images, docs, templates)
-- 📤 Export (JSON / ZIP)
-- 🌙 Dark mode (default)
+- Favorites & pinned items
+- Recently used
+- Import from files
+- Markdown editor for text items
+- File uploads (images, docs, templates)
+- Export (JSON / ZIP)
+- Dark mode (default)
 
-### F) 🪄 AI Superpowers
+### F) AI Superpowers
 
-| Feature              | What it does                                              |
-| -------------------- | --------------------------------------------------------- |
-| Auto-tagging         | Suggests relevant tags from item content                  |
-| AI Summaries         | One-line summary for long notes & docs                    |
-| Explain Code         | Plain-English explanation of a snippet                    |
-| Prompt Optimization  | Rewrites prompts for clarity, specificity, structure      |
+- Auto‑tagging
+- AI summaries
+- Explain Code
+- Prompt optimization
 
-> 🧠 AI powered by **OpenAI `gpt-5-nano`**
+> AI powered by **OpenAI gpt-5-nano**
 
 ---
 
 ## 🗄️ Data Model (Rough Prisma Draft)
 
-> ⚠️ **This schema is a starting point and will evolve.** Things likely to change: indexes, cascade rules, full-text-search columns, and the `contentType` discriminator (may move to a polymorphic pattern).
+> This schema is a starting point and **will evolve**
 
 ```prisma
 model User {
@@ -127,57 +113,52 @@ model User {
   isPro                Boolean  @default(false)
   stripeCustomerId     String?
   stripeSubscriptionId String?
-
   items                Item[]
   itemTypes            ItemType[]
   collections          Collection[]
   tags                 Tag[]
-
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 }
 
 model Item {
-  id           String   @id @default(cuid())
-  title        String
-  contentType  String   // "text" | "file"
-  content      String?  // used for text-based types
-  fileUrl      String?
-  fileName     String?
-  fileSize     Int?
-  url          String?
-  description  String?
-  isFavorite   Boolean  @default(false)
-  isPinned     Boolean  @default(false)
-  language     String?  // e.g. "ts", "py", "bash"
+  id          String   @id @default(cuid())
+  title       String
+  contentType String   // text | file
+  content     String?  // used for text types
+  fileUrl     String?
+  fileName    String?
+  fileSize    Int?
+  url         String?
+  description String?
+  isFavorite  Boolean  @default(false)
+  isPinned    Boolean  @default(false)
+  language    String?
 
-  userId       String
-  user         User     @relation(fields: [userId], references: [id])
+  userId      String
+  user        User @relation(fields: [userId], references: [id])
 
-  typeId       String
-  type         ItemType @relation(fields: [typeId], references: [id])
+  typeId      String
+  type        ItemType @relation(fields: [typeId], references: [id])
 
   collectionId String?
   collection   Collection? @relation(fields: [collectionId], references: [id])
 
-  tags         ItemTag[]
+  tags        ItemTag[]
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  @@index([userId, updatedAt])
-  @@index([userId, isFavorite])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model ItemType {
-  id       String  @id @default(cuid())
+  id       String   @id @default(cuid())
   name     String
   icon     String?
   color    String?
-  isSystem Boolean @default(false)
+  isSystem Boolean  @default(false)
 
   userId   String?
-  user     User?   @relation(fields: [userId], references: [id])
+  user     User? @relation(fields: [userId], references: [id])
 
   items    Item[]
 }
@@ -189,10 +170,9 @@ model Collection {
   isFavorite  Boolean  @default(false)
 
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  user        User @relation(fields: [userId], references: [id])
 
   items       Item[]
-
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -201,19 +181,17 @@ model Tag {
   id     String @id @default(cuid())
   name   String
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User @relation(fields: [userId], references: [id])
 
   items  ItemTag[]
-
-  @@unique([userId, name])
 }
 
 model ItemTag {
   itemId String
   tagId  String
 
-  item   Item @relation(fields: [itemId], references: [id])
-  tag    Tag  @relation(fields: [tagId], references: [id])
+  item Item @relation(fields: [itemId], references: [id])
+  tag  Tag  @relation(fields: [tagId], references: [id])
 
   @@id([itemId, tagId])
 }
@@ -223,68 +201,66 @@ model ItemTag {
 
 ## 🧱 Tech Stack
 
-| Category     | Choice                                                                                  |
-| ------------ | --------------------------------------------------------------------------------------- |
-| Framework    | [**Next.js**](https://nextjs.org) (React 19)                                            |
-| Language     | [TypeScript](https://www.typescriptlang.org)                                            |
-| Database     | [Neon PostgreSQL](https://neon.tech) + [Prisma ORM](https://www.prisma.io)              |
-| Caching      | [Redis](https://redis.io) (optional)                                                    |
-| File Storage | [Cloudflare R2](https://developers.cloudflare.com/r2/)                                  |
-| CSS / UI     | [Tailwind CSS v4](https://tailwindcss.com) + [shadcn/ui](https://ui.shadcn.com)         |
-| Auth         | [NextAuth v5](https://authjs.dev) (email + GitHub)                                      |
-| AI           | [OpenAI `gpt-5-nano`](https://platform.openai.com/docs)                                 |
-| Payments     | [Stripe](https://stripe.com) (subscriptions + webhooks)                                 |
-| Deployment   | [Vercel](https://vercel.com) (likely)                                                   |
-| Monitoring   | [Sentry](https://sentry.io) (later)                                                     |
+| Category     | Choice                       |
+| ------------ | ---------------------------- |
+| Framework    | **Next.js (React 19)**       |
+| Language     | TypeScript                   |
+| Database     | Neon PostgreSQL + Prisma ORM |
+| Caching      | Redis (optional)             |
+| File Storage | Cloudflare R2                |
+| CSS/UI       | Tailwind CSS v4 + ShadCN     |
+| Auth         | NextAuth v5 (email + GitHub) |
+| AI           | OpenAI gpt-5-nano            |
+| Deployment   | Vercel (likely)              |
+| Monitoring   | Sentry (later)               |
 
 ---
 
 ## 💰 Monetization
 
-| Plan    | Price            | Limits                  | Features                                                  |
-| ------- | ---------------- | ----------------------- | --------------------------------------------------------- |
-| 🆓 Free | $0               | 50 items, 3 collections | Basic search, image uploads, **no AI**                    |
-| 💎 Pro  | $8/mo or $72/yr  | Unlimited               | File uploads, custom types, AI features, export, priority |
+| Plan | Price           | Limits                  | Features                                        |
+| ---- | --------------- | ----------------------- | ----------------------------------------------- |
+| Free | $0              | 50 items, 3 collections | Basic search, image uploads, no AI              |
+| Pro  | $8/mo or $72/yr | Unlimited               | File uploads, custom types, AI features, export |
 
-> 💳 Stripe handles subscriptions; webhooks keep `isPro` in sync.
+> Stripe for subscriptions + webhooks for syncing
 
 ---
 
 ## 🎨 UI / UX
 
-- 🌙 **Dark mode first**
-- ✂️ Minimal, developer-friendly UI
-- 🌈 Syntax highlighting for code
-- 🎯 Inspired by **Notion, Linear, Raycast**
+- Dark mode first
+- Minimal, developer‑friendly UI
+- Syntax highlighting for code
+- Inspired by **Notion, Linear, Raycast**
 
 ### Layout
 
-- 📚 **Collapsible sidebar** with filters & collections
-- 🧮 Main grid/list workspace
-- 🖥️ Full-screen item editor
+- **Collapsible sidebar** with filters & collections
+- Main grid/list workspace
+- Full‑screen item editor
 
 ### Responsive
 
-- 📱 Mobile drawer for sidebar
-- 👆 Touch-optimized icons and buttons
+- Mobile drawer for sidebar
+- Touch‑optimized icons and buttons
 
 ---
 
-## 🔌 Architecture Diagrams
-
-### System Overview
+## 🔌 API Architecture
 
 ```mermaid
 graph TD;
-  Client["🖥️ Client (Next.js)"] <--> NextAPI["🛠️ Next.js API Routes"]
-  NextAPI --> Postgres[("🐘 Neon Postgres")]
-  NextAPI --> R2[("📦 Cloudflare R2")]
-  NextAPI --> OpenAI["🧠 OpenAI gpt-5-nano"]
-  NextAPI --> Redis[("⚡ Redis Cache")]
-  NextAPI --> Stripe["💳 Stripe"]
+  Client <--> Next.API
+  Next.API --> Postgres[(Neon DB)]
+  Next.API --> R2[(File Storage)]
+  Next.API --> OpenAI
+  Next.API --> Redis[(Cache)]
 ```
 
-### 🔐 Auth Flow
+---
+
+## 🔐 Auth Flow
 
 ```mermaid
 flowchart LR
@@ -292,31 +268,33 @@ flowchart LR
   Login --> NextAuth
   NextAuth --> Providers{Email / GitHub}
   Providers --> Session
-  Session --> AppAccess[App Access]
-```
-
-### 🧠 AI Feature Flow
-
-```mermaid
-flowchart TD
-  ItemContent[Item Content] --> API[API Route]
-  API --> OpenAI[OpenAI gpt-5-nano]
-  OpenAI --> Suggestions{{Tags / Summary / Explain Code}}
-  Suggestions --> UI_Update[UI Update]
+  Session --> AppAccess
 ```
 
 ---
 
-## 🛠️ Development Workflow (For Course)
+## 🧠 AI Feature Flow
 
-- 🌿 **One branch per lesson** — students can follow along and compare diffs
-- 🤖 Use **Cursor / Claude Code / ChatGPT** for assistance
-- 🐛 Sentry for runtime monitoring & error tracking
-- ⚙️ GitHub Actions (optional) for CI
+```mermaid
+flowchart TD
+  ItemContent --> API
+  API --> OpenAI
+  OpenAI --> Suggestions{{Tags / Summary / Explain Code}}
+  Suggestions --> UI_Update
+```
 
-**Branch naming example:**
+---
 
-```bash
+## 🗂️ Development Workflow (For Course)
+
+- **One branch per lesson** (students can follow & compare)
+- Use **Cursor / Claude Code / ChatGPT** for assistance
+- Sentry for runtime monitoring & error tracking
+- GitHub Actions (optional for CI)
+
+**Branch examples**:
+
+```
 git switch -c lesson-01-setup
 ```
 
@@ -324,29 +302,45 @@ git switch -c lesson-01-setup
 
 ## 🧭 Roadmap
 
-### 🟢 MVP
+### **MVP**
 
-- [ ] Items CRUD
-- [ ] Collections
-- [ ] Search
-- [ ] Basic tags
-- [ ] Free-tier limits
+- Items CRUD
+- Collections
+- Search
+- Basic tags
+- Free tier limits
 
-### 💎 Pro Phase
+### **Pro Phase**
 
-- [ ] AI features (tagging, summaries, explain, prompt optimization)
-- [ ] Custom item types
-- [ ] File uploads
-- [ ] Export (JSON / ZIP)
-- [ ] Billing & upgrade flow
+- AI features
+- Custom item types
+- File uploads
+- Export
+- Billing & upgrade flow
 
-### 🔮 Future Enhancements
+### **Future Enhancements**
 
-- [ ] Shared collections
-- [ ] Team / Org plans
-- [ ] VS Code extension
-- [ ] Browser extension
-- [ ] Public API + CLI tool
+- Shared collections
+- Team/Org plans
+- VS Code extension
+- Browser extension
+- API + CLI tool
+
+---
+
+### Screenshots
+
+Refer to the screenshots bellow as a base for the dashboard UI. It does not have to be exact. Use it as a reference:
+
+- @context/screenshots/dashboard-ui-drawer.png
+- @context/screenshots/dashboard-ui-main.png
+
+---
+
+## 📌 Status
+
+- In planning
+- Ready for environment setup & UI scaffolding
 
 ---
 
