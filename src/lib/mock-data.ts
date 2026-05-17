@@ -21,6 +21,7 @@ export interface MockCollection {
   itemCount: number;
   isFavorite: boolean;
   itemTypeSlugs: MockItemType["slug"][];
+  updatedAt: string;
 }
 
 export interface MockItem {
@@ -61,6 +62,7 @@ export const mockCollections: MockCollection[] = [
     itemCount: 12,
     isFavorite: true,
     itemTypeSlugs: ["snippet", "note", "url"],
+    updatedAt: "2026-01-15",
   },
   {
     id: "col_python_snippets",
@@ -69,6 +71,7 @@ export const mockCollections: MockCollection[] = [
     itemCount: 8,
     isFavorite: false,
     itemTypeSlugs: ["snippet", "file"],
+    updatedAt: "2026-01-05",
   },
   {
     id: "col_context_files",
@@ -77,6 +80,7 @@ export const mockCollections: MockCollection[] = [
     itemCount: 5,
     isFavorite: true,
     itemTypeSlugs: ["file", "note"],
+    updatedAt: "2026-01-03",
   },
   {
     id: "col_interview_prep",
@@ -85,6 +89,7 @@ export const mockCollections: MockCollection[] = [
     itemCount: 24,
     isFavorite: false,
     itemTypeSlugs: ["note", "snippet", "url", "prompt"],
+    updatedAt: "2026-01-09",
   },
   {
     id: "col_git_commands",
@@ -93,6 +98,7 @@ export const mockCollections: MockCollection[] = [
     itemCount: 15,
     isFavorite: true,
     itemTypeSlugs: ["command", "note"],
+    updatedAt: "2026-01-10",
   },
   {
     id: "col_ai_prompts",
@@ -101,6 +107,7 @@ export const mockCollections: MockCollection[] = [
     itemCount: 18,
     isFavorite: false,
     itemTypeSlugs: ["prompt", "snippet", "note"],
+    updatedAt: "2026-01-08",
   },
 ];
 

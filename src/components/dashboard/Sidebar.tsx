@@ -1,21 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import {
-  ChevronDown,
-  Code,
-  File,
-  FileText,
-  Image as ImageIcon,
-  Layers,
-  Link as LinkIcon,
-  Settings,
-  Sparkles,
-  Star,
-  Terminal,
-  X,
-} from "lucide-react";
+import { useCallback } from "react";
+import { ChevronDown, Layers, Settings, Star, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import {
@@ -24,23 +11,16 @@ import {
   mockUser,
   type MockItemType,
 } from "@/lib/mock-data";
-
-const typeIcons: Record<MockItemType["icon"], React.ComponentType<{ className?: string }>> = {
-  code: Code,
-  sparkles: Sparkles,
-  terminal: Terminal,
-  "file-text": FileText,
-  file: File,
-  image: ImageIcon,
-  link: LinkIcon,
-};
+import { typeIconsBySlug } from "@/lib/type-icons";
 
 function typeRoute(type: MockItemType) {
   return `/items/${type.name.toLowerCase()}`;
 }
 
 const favoriteCollections = mockCollections.filter((c) => c.isFavorite);
-const recentCollections = mockCollections.filter((c) => !c.isFavorite);
+const recentCollections = [...mockCollections]
+  .filter((c) => !c.isFavorite)
+  .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
 interface SidebarProps {
   open: boolean;
@@ -48,6 +28,12 @@ interface SidebarProps {
 }
 
 export function Sidebar({ open, onClose }: SidebarProps) {
+  const handleNavigate = useCallback(() => {
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 767.98px)").matches) {
+      onClose();
+    }
+  }, [onClose]);
+
   return (
     <>
       {open ? (
@@ -60,14 +46,17 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       ) : null}
 
       <aside
-        aria-label="Primary navigation"
         className={cn(
           "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-transform duration-200 ease-out md:relative md:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full md:hidden",
         )}
       >
         <div className="flex h-14 items-center justify-between border-b border-sidebar-border px-4">
-          <Link href="/dashboard" className="flex items-center gap-2 text-sm font-semibold">
+          <Link
+            href="/dashboard"
+            onClick={handleNavigate}
+            className="flex items-center gap-2 text-sm font-semibold"
+          >
             <span className="grid size-7 place-items-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
               <Layers className="size-4" />
             </span>
@@ -83,20 +72,23 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-2 py-3">
+        <nav aria-label="Primary" className="flex-1 overflow-y-auto px-2 py-3">
           <SidebarSection title="Types" defaultOpen>
             <ul className="mt-1 space-y-0.5">
               {mockItemTypes.map((type) => {
-                const Icon = typeIcons[type.icon] ?? File;
+                const Icon = typeIconsBySlug[type.slug];
                 return (
                   <li key={type.id}>
                     <Link
                       href={typeRoute(type)}
+                      onClick={handleNavigate}
                       className="group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     >
                       <Icon className="size-4 text-muted-foreground group-hover:text-sidebar-accent-foreground" />
                       <span className="flex-1 truncate">{type.name}</span>
-                      <span className="text-xs text-muted-foreground">{type.count}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {type.count}
+                      </span>
                     </Link>
                   </li>
                 );
@@ -111,6 +103,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 <li key={collection.id}>
                   <Link
                     href={`/collections/${collection.id}`}
+                    onClick={handleNavigate}
                     className="group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   >
                     <Star className="size-4 fill-yellow-400 text-yellow-400" />
@@ -126,11 +119,14 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 <li key={collection.id}>
                   <Link
                     href={`/collections/${collection.id}`}
+                    onClick={handleNavigate}
                     className="group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   >
                     <Layers className="size-4 text-muted-foreground group-hover:text-sidebar-accent-foreground" />
                     <span className="flex-1 truncate">{collection.name}</span>
-                    <span className="text-xs text-muted-foreground">{collection.itemCount}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {collection.itemCount}
+                    </span>
                   </Link>
                 </li>
               ))}
@@ -138,7 +134,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           </SidebarSection>
         </nav>
 
-        <SidebarUser />
+        <SidebarUser onNavigate={handleNavigate} />
       </aside>
     </>
   );
@@ -150,26 +146,19 @@ interface SidebarSectionProps {
   children: React.ReactNode;
 }
 
-function SidebarSection({ title, defaultOpen = true, children }: SidebarSectionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+function SidebarSection({
+  title,
+  defaultOpen = true,
+  children,
+}: SidebarSectionProps) {
   return (
-    <div className="mb-4">
-      <button
-        type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
-        aria-expanded={isOpen}
-        className="flex w-full items-center gap-1 rounded-md px-2 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground hover:text-sidebar-foreground"
-      >
+    <details open={defaultOpen} className="group mb-4">
+      <summary className="flex w-full cursor-pointer list-none items-center gap-1 rounded-md px-2 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground hover:text-sidebar-foreground [&::-webkit-details-marker]:hidden">
         {title}
-        <ChevronDown
-          className={cn(
-            "size-3.5 transition-transform",
-            isOpen ? "rotate-0" : "-rotate-90",
-          )}
-        />
-      </button>
-      {isOpen ? children : null}
-    </div>
+        <ChevronDown className="size-3.5 -rotate-90 transition-transform group-open:rotate-0" />
+      </summary>
+      {children}
+    </details>
   );
 }
 
@@ -192,7 +181,11 @@ function SidebarGroupLabel({
   );
 }
 
-function SidebarUser() {
+interface SidebarUserProps {
+  onNavigate: () => void;
+}
+
+function SidebarUser({ onNavigate }: SidebarUserProps) {
   const initials = mockUser.name
     .split(" ")
     .map((part) => part[0])
@@ -206,16 +199,21 @@ function SidebarUser() {
         {initials}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-medium text-sidebar-foreground">{mockUser.name}</div>
-        <div className="truncate text-xs text-muted-foreground">{mockUser.email}</div>
+        <div className="truncate text-sm font-medium text-sidebar-foreground">
+          {mockUser.name}
+        </div>
+        <div className="truncate text-xs text-muted-foreground">
+          {mockUser.email}
+        </div>
       </div>
-      <button
-        type="button"
+      <Link
+        href="/settings"
         aria-label="Account settings"
+        onClick={onNavigate}
         className="grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
       >
         <Settings className="size-4" />
-      </button>
+      </Link>
     </div>
   );
 }
