@@ -24,6 +24,55 @@ interface GetRecentCollectionsArgs {
   limit?: number;
 }
 
+const COLLECTION_TYPE_INCLUDE = {
+  items: {
+    select: {
+      type: {
+        select: { id: true, name: true, icon: true, color: true },
+      },
+    },
+  },
+} as const;
+
+type CollectionItemTypeRow = {
+  id: string;
+  name: string;
+  icon: string | null;
+  color: string | null;
+};
+
+type CollectionWithItemTypes = {
+  id: string;
+  name: string;
+  description: string | null;
+  isFavorite: boolean;
+  updatedAt: Date;
+  items: { type: CollectionItemTypeRow }[];
+};
+
+function toDashboardCollection(collection: CollectionWithItemTypes): DashboardCollection {
+  const typeCounts = new Map<string, CollectionTypeBreakdown>();
+  for (const item of collection.items) {
+    const existing = typeCounts.get(item.type.id);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      typeCounts.set(item.type.id, { ...item.type, count: 1 });
+    }
+  }
+  const types = [...typeCounts.values()].sort((a, b) => b.count - a.count);
+  return {
+    id: collection.id,
+    name: collection.name,
+    description: collection.description,
+    isFavorite: collection.isFavorite,
+    updatedAt: collection.updatedAt,
+    itemCount: collection.items.length,
+    types,
+    primaryTypeColor: types[0]?.color ?? null,
+  };
+}
+
 export async function getRecentCollections({
   userId,
   limit = 6,
@@ -32,37 +81,29 @@ export async function getRecentCollections({
     where: { userId },
     orderBy: { updatedAt: "desc" },
     take: limit,
-    include: {
-      items: {
-        select: {
-          type: {
-            select: { id: true, name: true, icon: true, color: true },
-          },
-        },
-      },
-    },
+    include: COLLECTION_TYPE_INCLUDE,
   });
+  return collections.map(toDashboardCollection);
+}
 
-  return collections.map((collection) => {
-    const typeCounts = new Map<string, CollectionTypeBreakdown>();
-    for (const item of collection.items) {
-      const existing = typeCounts.get(item.type.id);
-      if (existing) {
-        existing.count += 1;
-      } else {
-        typeCounts.set(item.type.id, { ...item.type, count: 1 });
-      }
-    }
-    const types = [...typeCounts.values()].sort((a, b) => b.count - a.count);
-    return {
-      id: collection.id,
-      name: collection.name,
-      description: collection.description,
-      isFavorite: collection.isFavorite,
-      updatedAt: collection.updatedAt,
-      itemCount: collection.items.length,
-      types,
-      primaryTypeColor: types[0]?.color ?? null,
-    };
+export interface SidebarCollections {
+  favorites: DashboardCollection[];
+  recents: DashboardCollection[];
+}
+
+export async function getSidebarCollections({
+  userId,
+}: {
+  userId: string;
+}): Promise<SidebarCollections> {
+  const collections = await prisma.collection.findMany({
+    where: { userId },
+    orderBy: { updatedAt: "desc" },
+    include: COLLECTION_TYPE_INCLUDE,
   });
+  const mapped = collections.map(toDashboardCollection);
+  return {
+    favorites: mapped.filter((c) => c.isFavorite),
+    recents: mapped.filter((c) => !c.isFavorite),
+  };
 }
