@@ -1,12 +1,30 @@
 # Current Feature
 
-_None — ready for the next phase._
+Seed sample data — replace the mock-data-driven seed with a richer demo dataset: a hashed-password demo user, system item types with proper Lucide icons + colors, and 5 hand-curated collections (React Patterns, AI Workflows, DevOps, Terminal Commands, Design Resources) populated with realistic snippets, prompts, commands, and links. See [seed-spec.md](features/seed-spec.md).
 
 ## Status
 
+In progress
+
 ## Goals
 
+- Demo user: `demo@devstash.io` / "Demo User" / password `12345678` hashed with `bcryptjs` (12 rounds), `isPro: false`, `emailVerified` set to now
+- 7 system `ItemType`s with `isSystem: true`, Lucide icon names, and hex colors from the spec
+- 5 collections with descriptions per spec:
+  - **React Patterns** — 3 TypeScript snippets (hooks, component patterns, utilities)
+  - **AI Workflows** — 3 prompts (code review, doc generation, refactor assist)
+  - **DevOps** — 1 snippet, 1 command, 2 links (real URLs)
+  - **Terminal Commands** — 4 commands (git, docker, process management, package manager)
+  - **Design Resources** — 4 links (real URLs for CSS/Tailwind, component libs, design systems, icon libs)
+- Keep the seed idempotent (re-runnable via `npx prisma db seed`)
+- Drop the dependency on `src/lib/mock-data.ts` for seeding now that real content lives in the seed itself
+
 ## Notes
+
+- `bcryptjs` is a new dependency (pure JS — no native build step, works fine with `tsx`)
+- Seed runs via `prisma.config.ts → migrations.seed = "tsx prisma/seed.ts"` (already configured)
+- Item type `name` values in the spec are lowercase singular (`snippet`, `prompt`, …) — different from the existing plural Title Case in `mock-data.ts`; the dashboard sidebar will need its name source updated when wired to the DB
+- Real URLs for DevOps / Design Resources should point to canonical docs (docs.docker.com, tailwindcss.com, ui.shadcn.com, lucide.dev, etc.) — no link rot from invented URLs
 
 ## History
 
