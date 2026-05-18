@@ -15,18 +15,20 @@ export async function DashboardMain() {
     where: { email: DEMO_USER_EMAIL },
     select: { id: true },
   });
-  if (!user) {
-    throw new Error(
-      `Demo user not found (${DEMO_USER_EMAIL}). Run \`prisma db seed\` against the dev database.`,
-    );
-  }
 
-  const [stats, recentCollections, pinnedItems, recentItems] = await Promise.all([
-    getDashboardStats({ userId: user.id }),
-    getRecentCollections({ userId: user.id, limit: 6 }),
-    getPinnedItems({ userId: user.id }),
-    getRecentItems({ userId: user.id, limit: 10 }),
-  ]);
+  const [stats, recentCollections, pinnedItems, recentItems] = user
+    ? await Promise.all([
+        getDashboardStats({ userId: user.id }),
+        getRecentCollections({ userId: user.id, limit: 6 }),
+        getPinnedItems({ userId: user.id }),
+        getRecentItems({ userId: user.id, limit: 10 }),
+      ])
+    : [
+        { itemCount: 0, collectionCount: 0, favoriteItemCount: 0, favoriteCollectionCount: 0 },
+        [],
+        [],
+        [],
+      ];
 
   return (
     <div className="space-y-8">
