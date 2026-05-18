@@ -11,7 +11,7 @@ import {
   mockUser,
   type MockItemType,
 } from "@/lib/mock-data";
-import { typeIconsBySlug } from "@/lib/type-icons";
+import { typeColorsBySlug, typeIconsBySlug } from "@/lib/type-icons";
 
 function typeRoute(type: MockItemType) {
   return `/items/${type.name.toLowerCase()}`;
@@ -84,7 +84,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                       onClick={handleNavigate}
                       className="group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     >
-                      <Icon className="size-4 text-muted-foreground group-hover:text-sidebar-accent-foreground" />
+                      <Icon className="size-4" style={{ color: typeColorsBySlug[type.slug] }} />
                       <span className="flex-1 truncate">{type.name}</span>
                       <span className="text-xs text-muted-foreground">
                         {type.count}

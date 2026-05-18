@@ -5,15 +5,10 @@ import { CollectionCard } from "@/components/dashboard/CollectionCard";
 import { ItemRow } from "@/components/dashboard/ItemRow";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { getRecentCollections } from "@/lib/db/collections";
-import { mockItems } from "@/lib/mock-data";
+import { getDashboardStats, getPinnedItems, getRecentItems } from "@/lib/db/items";
 import { prisma } from "@/lib/prisma";
 
 const DEMO_USER_EMAIL = "demo@devstash.io";
-
-const pinnedItems = mockItems.filter((item) => item.isPinned);
-const recentItems = [...mockItems]
-  .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-  .slice(0, 10);
 
 export async function DashboardMain() {
   const user = await prisma.user.findUnique({
@@ -25,7 +20,13 @@ export async function DashboardMain() {
       `Demo user not found (${DEMO_USER_EMAIL}). Run \`prisma db seed\` against the dev database.`,
     );
   }
-  const recentCollections = await getRecentCollections({ userId: user.id, limit: 6 });
+
+  const [stats, recentCollections, pinnedItems, recentItems] = await Promise.all([
+    getDashboardStats({ userId: user.id }),
+    getRecentCollections({ userId: user.id, limit: 6 }),
+    getPinnedItems({ userId: user.id }),
+    getRecentItems({ userId: user.id, limit: 10 }),
+  ]);
 
   return (
     <div className="space-y-8">
@@ -34,7 +35,7 @@ export async function DashboardMain() {
         <p className="mt-1 text-sm text-muted-foreground">Your developer knowledge hub</p>
       </header>
 
-      <StatsCards />
+      <StatsCards stats={stats} />
 
       <section>
         <SectionHeader title="Collections" viewAllHref="/collections" />
