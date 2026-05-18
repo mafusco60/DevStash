@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 
 const DEMO_USER_EMAIL = "demo@devstash.io";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const user = await prisma.user.findUnique({
     where: { email: DEMO_USER_EMAIL },
