@@ -13,20 +13,20 @@ export default async function DashboardPage() {
     where: { email: DEMO_USER_EMAIL },
     select: { id: true, name: true, email: true },
   });
-  if (!user) {
-    throw new Error(
-      `Demo user not found (${DEMO_USER_EMAIL}). Run \`prisma db seed\` against the dev database.`,
-    );
-  }
 
-  const [itemTypes, collections] = await Promise.all([
-    getSidebarItemTypes({ userId: user.id }),
-    getSidebarCollections({ userId: user.id }),
-  ]);
+  const [itemTypes, collections] = user
+    ? await Promise.all([
+        getSidebarItemTypes({ userId: user.id }),
+        getSidebarCollections({ userId: user.id }),
+      ])
+    : [[], { favorites: [], recents: [] }];
 
   return (
     <DashboardShell
-      user={{ name: user.name, email: user.email }}
+      user={{
+        name: user?.name ?? "Guest",
+        email: user?.email ?? "",
+      }}
       itemTypes={itemTypes}
       collections={collections}
     >
