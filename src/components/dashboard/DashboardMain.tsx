@@ -4,15 +4,29 @@ import { Pin } from "lucide-react";
 import { CollectionCard } from "@/components/dashboard/CollectionCard";
 import { ItemRow } from "@/components/dashboard/ItemRow";
 import { StatsCards } from "@/components/dashboard/StatsCards";
-import { mockCollections, mockItems } from "@/lib/mock-data";
+import { getRecentCollections } from "@/lib/db/collections";
+import { mockItems } from "@/lib/mock-data";
+import { prisma } from "@/lib/prisma";
 
-const recentCollections = mockCollections;
+const DEMO_USER_EMAIL = "demo@devstash.io";
+
 const pinnedItems = mockItems.filter((item) => item.isPinned);
 const recentItems = [...mockItems]
   .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
   .slice(0, 10);
 
-export function DashboardMain() {
+export async function DashboardMain() {
+  const user = await prisma.user.findUnique({
+    where: { email: DEMO_USER_EMAIL },
+    select: { id: true },
+  });
+  if (!user) {
+    throw new Error(
+      `Demo user not found (${DEMO_USER_EMAIL}). Run \`prisma db seed\` against the dev database.`,
+    );
+  }
+  const recentCollections = await getRecentCollections({ userId: user.id, limit: 6 });
+
   return (
     <div className="space-y-8">
       <header>
