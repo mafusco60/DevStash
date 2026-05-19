@@ -5,9 +5,12 @@ import { useCallback } from "react";
 import { ChevronDown, Layers, Settings, Star, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import type { SidebarCollections, DashboardCollection } from "@/lib/db/collections";
 import type { SidebarItemType } from "@/lib/db/items";
 import { iconsByLucideName } from "@/lib/type-icons";
+
+const PRO_TYPE_SLUGS = new Set(["files", "images"]);
 
 export interface SidebarUser {
   name: string | null;
@@ -86,6 +89,14 @@ export function Sidebar({ open, onClose, user, itemTypes, collections }: Sidebar
                         />
                       ) : null}
                       <span className="flex-1 truncate">{type.label}</span>
+                      {PRO_TYPE_SLUGS.has(type.slug) ? (
+                        <Badge
+                          variant="secondary"
+                          className="h-4 px-1.5 text-[10px] font-semibold tracking-wider"
+                        >
+                          PRO
+                        </Badge>
+                      ) : null}
                       <span className="text-xs text-muted-foreground">{type.count}</span>
                     </Link>
                   </li>
