@@ -1,12 +1,32 @@
-# Current Feature
-
-_None — ready for the next phase._
+# Current Feature: Auth Phase 2 — Credentials Provider
 
 ## Status
 
+In Progress
+
 ## Goals
 
+- Add NextAuth Credentials provider (email/password) alongside existing GitHub OAuth
+- Add Credentials provider placeholder (`authorize: () => null`) in `src/auth.config.ts` so it's edge-safe
+- Override Credentials in `src/auth.ts` with real bcryptjs validation against the `User.password` hash
+- Add `password` field to the `User` model via Prisma migration if not already present
+- Create `POST /api/auth/register` route that:
+  - Accepts `{ name, email, password, confirmPassword }`
+  - Validates passwords match
+  - Checks for existing user
+  - Hashes password with `bcryptjs`
+  - Creates the user and returns `{ success, data, error }`-style response
+- Verify end-to-end: `curl` registration → sign in via `/api/auth/signin` → redirect to `/dashboard`
+- Confirm GitHub OAuth still works after the changes
+
 ## Notes
+
+- `bcryptjs` is already installed (used by the seed script — see history entry for 2026-05-18 seed sample data).
+- Demo user already has a bcrypt-hashed password in the seed (`12345678` for `demo@devstash.io`), so the Credentials provider should be able to authenticate the seeded user once wired.
+- Split-config pattern is in place from Phase 1: keep `auth.config.ts` edge-safe (no bcryptjs, no Prisma) — bcrypt + DB lookup belongs in `auth.ts` only.
+- Dashboard session-aware swap is still deferred (see [[project_nextauth_dashboard_swap]]); not in scope for this phase.
+- Validate request body with Zod per coding standards.
+- Reference: https://authjs.dev/getting-started/authentication/credentials
 
 ## History
 
