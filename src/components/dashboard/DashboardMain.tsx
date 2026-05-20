@@ -6,29 +6,18 @@ import { ItemRow } from "@/components/dashboard/ItemRow";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { getRecentCollections } from "@/lib/db/collections";
 import { getDashboardStats, getPinnedItems, getRecentItems } from "@/lib/db/items";
-import { prisma } from "@/lib/prisma";
 
-const DEMO_USER_EMAIL = "demo@devstash.io";
+interface DashboardMainProps {
+  userId: string;
+}
 
-export async function DashboardMain() {
-  const user = await prisma.user.findUnique({
-    where: { email: DEMO_USER_EMAIL },
-    select: { id: true },
-  });
-
-  const [stats, recentCollections, pinnedItems, recentItems] = user
-    ? await Promise.all([
-        getDashboardStats({ userId: user.id }),
-        getRecentCollections({ userId: user.id, limit: 6 }),
-        getPinnedItems({ userId: user.id }),
-        getRecentItems({ userId: user.id, limit: 10 }),
-      ])
-    : [
-        { itemCount: 0, collectionCount: 0, favoriteItemCount: 0, favoriteCollectionCount: 0 },
-        [],
-        [],
-        [],
-      ];
+export async function DashboardMain({ userId }: DashboardMainProps) {
+  const [stats, recentCollections, pinnedItems, recentItems] = await Promise.all([
+    getDashboardStats({ userId }),
+    getRecentCollections({ userId, limit: 6 }),
+    getPinnedItems({ userId }),
+    getRecentItems({ userId, limit: 10 }),
+  ]);
 
   return (
     <div className="space-y-8">
