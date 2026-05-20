@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useCallback } from "react";
-import { ChevronDown, Layers, Settings, Star, X } from "lucide-react";
+import { ChevronDown, Layers, Star, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { UserMenu } from "@/components/auth/UserMenu";
 import { Badge } from "@/components/ui/badge";
 import type { SidebarCollections, DashboardCollection } from "@/lib/db/collections";
 import type { SidebarItemType } from "@/lib/db/items";
@@ -15,6 +16,7 @@ const PRO_TYPE_SLUGS = new Set(["files", "images"]);
 export interface SidebarUser {
   name: string | null;
   email: string;
+  image: string | null;
 }
 
 interface SidebarProps {
@@ -152,7 +154,7 @@ export function Sidebar({ open, onClose, user, itemTypes, collections }: Sidebar
           </SidebarSection>
         </nav>
 
-        <SidebarUserFooter user={user} onNavigate={handleNavigate} />
+        <UserMenu user={user} />
       </aside>
     </>
   );
@@ -223,40 +225,3 @@ function SidebarGroupLabel({
   );
 }
 
-interface SidebarUserFooterProps {
-  user: SidebarUser;
-  onNavigate: () => void;
-}
-
-function SidebarUserFooter({ user, onNavigate }: SidebarUserFooterProps) {
-  const displayName = user.name ?? user.email;
-  const initials = displayName
-    .split(/\s+/)
-    .map((part) => part[0])
-    .filter(Boolean)
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
-  return (
-    <div className="flex items-center gap-3 border-t border-sidebar-border px-3 py-3">
-      <div className="grid size-9 shrink-0 place-items-center rounded-full bg-sidebar-accent text-sm font-medium text-sidebar-accent-foreground">
-        {initials}
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-medium text-sidebar-foreground">
-          {displayName}
-        </div>
-        <div className="truncate text-xs text-muted-foreground">{user.email}</div>
-      </div>
-      <Link
-        href="/settings"
-        aria-label="Account settings"
-        onClick={onNavigate}
-        className="grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-      >
-        <Settings className="size-4" />
-      </Link>
-    </div>
-  );
-}

@@ -9,6 +9,9 @@ import GitHub from "next-auth/providers/github";
 // (bcryptjs + Prisma) lives in `src/auth.ts`. Keep this file free of any
 // Node-only imports so it can be safely included from middleware/proxy.
 export default {
+  pages: {
+    signIn: "/sign-in",
+  },
   providers: [
     GitHub,
     Credentials({

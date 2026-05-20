@@ -1,12 +1,39 @@
-# Current Feature
-
-_None — ready for the next phase._
+# Current Feature: Auth Phase 3 — Custom Sign-In / Register / Sign-Out UI
 
 ## Status
 
+In Progress
+
 ## Goals
 
+- Build a custom `/sign-in` page that replaces the default NextAuth UI
+  - Email + password inputs with client-side form validation and error display
+  - "Sign in with GitHub" button
+  - Link to `/register`
+- Build a custom `/register` page
+  - Name, email, password, confirm password inputs
+  - Client-side validation (passwords match, email format)
+  - Submits to `POST /api/auth/register`, redirects to `/sign-in` on success
+- Wire NextAuth `pages.signIn` to `/sign-in` so the proxy / `signIn()` calls route there
+- Update the sidebar footer with a real user avatar
+  - Show `user.image` when present (GitHub avatar); otherwise initials fallback (e.g. "Brad Traversy" → "BT")
+  - Click avatar → drop-up menu with a "Sign out" action and a profile link to `/profile`
+  - Extract a reusable `<UserAvatar>` (or `<Avatar>`) component that handles both cases
+- Verify end-to-end:
+  - `/sign-in` renders custom page; credentials sign-in works; GitHub OAuth still works
+  - `/register` creates a new account and redirects to `/sign-in`
+  - Sidebar shows GitHub image when signed in via OAuth, initials otherwise
+  - Sign-out clears the session and redirects appropriately
+
 ## Notes
+
+- Phase 1 + 2 are merged on `main`: NextAuth v5 split config + Credentials provider + `POST /api/auth/register` are live. `next-auth@^5.0.0-beta.31`, `@auth/prisma-adapter@^2.11.2`, `zod@^4.4.3`, `bcryptjs` already installed.
+- Dashboard currently still resolves `demo@devstash.io` explicitly; the session-aware swap is deferred (see [[project_nextauth_dashboard_swap]]) — out of scope for this phase, but the sidebar avatar changes here may make the swap more attractive next.
+- Use Server Actions or `signIn`/`signOut` from `next-auth/react` for the client interactions; per `context/coding-standards.md`, prefer server components by default and only mark `'use client'` for the interactive form pieces.
+- shadcn/ui already has `Button`, `Input`, `Badge`. Install `avatar` and `dropdown-menu` from shadcn for the sidebar footer drop-up + image/initials avatar (decision: shadcn over a hand-rolled `<details>`).
+- Validate forms with Zod on the client too (mirror the server schema in `/api/auth/register` for the register page; add a simple sign-in schema for `/sign-in`).
+- The default NextAuth sign-in page renders password inputs as `type="text"` — make sure the custom page uses `type="password"` for the password field.
+- Stub `/profile` with a minimal placeholder page (server component, just an `<h1>` heading) so the dropdown link doesn't 404. Real profile UI lands in a later lesson.
 
 ## History
 
