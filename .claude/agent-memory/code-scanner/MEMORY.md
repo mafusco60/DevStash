@@ -1,0 +1,2 @@
+- [First full audit completed](project_audit_may2026.md) — May 2026 scan findings, hotspots to recheck.
+- [False positives to avoid](feedback_false_positives.md) — patterns that are intentional, never flag these.

@@ -43,3 +43,7 @@ next-env.d.ts
 
 # prisma generated client (regenerated via `prisma generate`)
 /src/generated/
+
+# claude code — local mcp config (may contain secrets) and ephemeral subagent worktrees
+.mcp.json
+.claude/worktrees/

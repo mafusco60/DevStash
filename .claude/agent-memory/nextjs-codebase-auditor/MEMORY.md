@@ -1,0 +1,3 @@
+- [Project conventions confirmed](project_conventions.md) — key stack and pattern decisions verified during first full audit.
+- [Known false-positive patterns](feedback_false_positives.md) — patterns that look like issues but are intentional in this codebase.
+- [Audit history: May 2026 full scan](project_audit_may2026.md) — findings and severity from the first comprehensive audit.
