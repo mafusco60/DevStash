@@ -13,7 +13,7 @@ import {
 export type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
 // Lookup by ItemType.icon (the Lucide component name stored on each row).
-export const iconsByLucideName: Record<string, IconComponent> = {
+export const iconsByLucideName: Partial<Record<string, IconComponent>> = {
   Code,
   Sparkles,
   Terminal,
