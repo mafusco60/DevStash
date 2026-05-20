@@ -93,17 +93,26 @@ export interface SidebarCollections {
 
 export async function getSidebarCollections({
   userId,
+  recentLimit = 10,
 }: {
   userId: string;
+  recentLimit?: number;
 }): Promise<SidebarCollections> {
-  const collections = await prisma.collection.findMany({
-    where: { userId },
-    orderBy: { updatedAt: "desc" },
-    include: COLLECTION_TYPE_INCLUDE,
-  });
-  const mapped = collections.map(toDashboardCollection);
+  const [favorites, recents] = await Promise.all([
+    prisma.collection.findMany({
+      where: { userId, isFavorite: true },
+      orderBy: { updatedAt: "desc" },
+      include: COLLECTION_TYPE_INCLUDE,
+    }),
+    prisma.collection.findMany({
+      where: { userId, isFavorite: false },
+      orderBy: { updatedAt: "desc" },
+      take: recentLimit,
+      include: COLLECTION_TYPE_INCLUDE,
+    }),
+  ]);
   return {
-    favorites: mapped.filter((c) => c.isFavorite),
-    recents: mapped.filter((c) => !c.isFavorite),
+    favorites: favorites.map(toDashboardCollection),
+    recents: recents.map(toDashboardCollection),
   };
 }

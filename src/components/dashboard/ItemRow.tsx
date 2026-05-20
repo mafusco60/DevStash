@@ -7,7 +7,9 @@ import type { DashboardItem } from "@/lib/db/items";
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function formatDate(date: Date) {
-  return `${MONTHS[date.getMonth()]} ${date.getDate()}`;
+  const base = `${MONTHS[date.getMonth()]} ${date.getDate()}`;
+  const sameYear = date.getFullYear() === new Date().getFullYear();
+  return sameYear ? base : `${base}, ${date.getFullYear()}`;
 }
 
 interface ItemRowProps {
