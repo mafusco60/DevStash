@@ -1,32 +1,12 @@
-# Current Feature: Auth Phase 2 — Credentials Provider
+# Current Feature
+
+_None — ready for the next phase._
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Add NextAuth Credentials provider (email/password) alongside existing GitHub OAuth
-- Add Credentials provider placeholder (`authorize: () => null`) in `src/auth.config.ts` so it's edge-safe
-- Override Credentials in `src/auth.ts` with real bcryptjs validation against the `User.password` hash
-- Add `password` field to the `User` model via Prisma migration if not already present
-- Create `POST /api/auth/register` route that:
-  - Accepts `{ name, email, password, confirmPassword }`
-  - Validates passwords match
-  - Checks for existing user
-  - Hashes password with `bcryptjs`
-  - Creates the user and returns `{ success, data, error }`-style response
-- Verify end-to-end: `curl` registration → sign in via `/api/auth/signin` → redirect to `/dashboard`
-- Confirm GitHub OAuth still works after the changes
-
 ## Notes
-
-- `bcryptjs` is already installed (used by the seed script — see history entry for 2026-05-18 seed sample data).
-- Demo user already has a bcrypt-hashed password in the seed (`12345678` for `demo@devstash.io`), so the Credentials provider should be able to authenticate the seeded user once wired.
-- Split-config pattern is in place from Phase 1: keep `auth.config.ts` edge-safe (no bcryptjs, no Prisma) — bcrypt + DB lookup belongs in `auth.ts` only.
-- Dashboard session-aware swap is still deferred (see [[project_nextauth_dashboard_swap]]); not in scope for this phase.
-- Validate request body with Zod per coding standards.
-- Reference: https://authjs.dev/getting-started/authentication/credentials
 
 ## History
 
@@ -44,3 +24,4 @@ In Progress
 - 2026-05-18 — Pro badge in sidebar complete on branch `add-pro-badge-sidebar`: added shadcn/ui `Badge` at `src/components/ui/badge.tsx` (Base UI `useRender` variant with `default/secondary/destructive/outline/ghost/link` variants). `Sidebar` renders a `secondary`-variant "PRO" badge (uppercase, `h-4 px-1.5 text-[10px] font-semibold tracking-wider`) next to the `Files` and `Images` type links, gated by a local `PRO_TYPE_SLUGS = new Set(["files", "images"])` so the type-count chip still trails on the right. Static gating signal only — `isPro` isn't read yet since auth lands later (see [[project_nextauth_dashboard_swap]]).
 - 2026-05-19 — Code scanner fixes complete on branch `code-scanner-fixes`: addressed 4 of 8 findings from this session's code-scanner audit (0 Critical / 2 High / 3 Medium / 3 Low). `src/lib/db/collections.ts` `getSidebarCollections` now runs two parallel `prisma.collection.findMany` queries split on `isFavorite` (favorites unbounded, recents capped via new `recentLimit = 10` param) instead of fetching all collections and filtering in memory. `src/components/dashboard/ItemRow.tsx` `formatDate` appends `, YYYY` when the item's year is not the current year. `src/lib/type-icons.ts` `iconsByLucideName` retyped as `Partial<Record<string, IconComponent>>` so the undefined case is explicit — the existing `type.icon ? iconsByLucideName[...] : null` guards in `Sidebar`/`CollectionCard`/`ItemRow` are now load-bearing instead of vestigial. `src/components/dashboard/TopBar.tsx` declared `'use client'` since it accepts a function prop and binds `onClick`. Four other scanner findings (duplicate demo-user `findUnique`, `process.env.DATABASE_URL!` guard, `tsconfig` `src/generated` exclude, seed password env var) were explicitly rejected from this feature's scope and remain open in the scanner report.
 - 2026-05-20 — Auth Phase 1 (NextAuth v5 + GitHub) complete on branch `lesson-10-auth-phase-1`: installed `next-auth@^5.0.0-beta.31` + `@auth/prisma-adapter@^2.11.2`. Split config — `src/auth.config.ts` exports an edge-safe `NextAuthConfig` with only `providers: [GitHub]`; `src/auth.ts` imports it last, prepends `adapter: PrismaAdapter(prisma)` (passing the singleton from `src/lib/prisma.ts`), `session.strategy: "jwt"`, and a `session` callback copying `token.sub` → `session.user.id`. Route handler at `src/app/api/auth/[...nextauth]/route.ts` re-exports `{ GET, POST }` from `handlers`. `src/proxy.ts` is the Next 16 proxy — `export const proxy = auth(...)` wraps a redirect to `/api/auth/signin?callbackUrl=<pathname>` when `req.auth` is falsy, with `config.matcher: ["/dashboard", "/dashboard/:path*"]` (no custom `pages.signIn` — uses NextAuth's default UI). `src/types/next-auth.d.ts` augments `next-auth` `Session.user` with `{ id: string } & DefaultSession["user"]` so the new property is type-checked. `.env.example` gained `AUTH_SECRET` / `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` with setup hints (incl. dev OAuth callback URL `http://localhost:3000/api/auth/callback/github`). Verified locally: unauthenticated `GET /dashboard` 302s with `Location: /api/auth/signin?callbackUrl=%2Fdashboard` and sets `authjs.csrf-token` + `authjs.callback-url`; default sign-in page renders the "Sign in with GitHub" button; after GitHub OAuth, the proxy lets the browser back through to `/dashboard` (session JWT is set). Dashboard still reads `demo@devstash.io` — session-aware swap deferred (see [[project_nextauth_dashboard_swap]]).
+- 2026-05-20 — Auth Phase 2 (Credentials provider + registration) complete on branch `lesson-11-auth-phase-2`: installed `zod@^4.4.3` for request validation. `src/auth.config.ts` adds an edge-safe `Credentials({ credentials: { email: {}, password: {} }, authorize: async () => null })` placeholder next to `GitHub` so the providers array is stable across the proxy/edge boundary. `src/auth.ts` `.map`s `authConfig.providers` and replaces the credentials entry with the real `authorize` — Zod-validated (`z.email().trim().toLowerCase()` + `z.string().min(1)` — Zod 4's `z.string().email()` is deprecated, use the top-level `z.email()`), then `prisma.user.findUnique({ where: { email } })` and `bcrypt.compare(password, user.password)`; returns `{ id, email, name, image }` on success or `null` on any failure (no thrown errors so NextAuth surfaces the standard `CredentialsSignin` code). Function-shaped providers like `GitHub` pass through untouched (`typeof provider === "function"` short-circuit) so OAuth keeps working. New `POST /api/auth/register` at `src/app/api/auth/register/route.ts` — Zod schema (`name` 1-100 chars, `email` lowercased/trimmed, `password` ≥ 8, `confirmPassword` `.refine` for match), pre-create dupe check via `prisma.user.findUnique`, `bcrypt.hash(password, 12)`, returns `{ success, data: { id, name, email } }` on 201 or `{ success: false, error, issues? }` on 400/409/500. No Prisma migration needed — `User.password String?` already in the schema since lesson-05. Verified locally against the running dev server: register happy path → 201; duplicate → 409; password mismatch → 400 with `confirmPassword` field error; short password → 400 with `password` error; invalid email → 400; malformed JSON → 400. Credentials sign-in with seeded demo user (`demo@devstash.io` / `12345678`) → 302 to `/dashboard` with `authjs.session-token` cookie, `/api/auth/session` returns the JWT user (`id: "user_demo"`), `GET /dashboard` returns 200. Wrong password → 302 to `/api/auth/signin?error=CredentialsSignin&code=credentials` with no session. GitHub OAuth still 302s to `github.com/login/oauth/authorize` with PKCE. Default NextAuth sign-in page renders both forms (GitHub button + credentials email/password inputs posting to `/api/auth/callback/credentials`). Dashboard still reads `demo@devstash.io` — session-aware swap remains deferred (see [[project_nextauth_dashboard_swap]]).
