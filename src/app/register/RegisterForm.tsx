@@ -78,7 +78,9 @@ export function RegisterForm() {
         return;
       }
 
-      router.push("/sign-in?registered=1");
+      router.push(
+        `/verify-email?email=${encodeURIComponent(parsed.data.email)}`
+      );
     } catch {
       setErrors({ form: "Network error. Please try again." });
     } finally {

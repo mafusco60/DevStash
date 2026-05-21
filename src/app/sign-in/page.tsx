@@ -6,7 +6,11 @@ import { auth } from "@/auth";
 import { SignInForm } from "./SignInForm";
 
 interface SignInPageProps {
-  searchParams: Promise<{ callbackUrl?: string; error?: string }>;
+  searchParams: Promise<{
+    callbackUrl?: string;
+    error?: string;
+    code?: string;
+  }>;
 }
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
@@ -15,7 +19,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
     redirect("/dashboard");
   }
 
-  const { callbackUrl, error } = await searchParams;
+  const { callbackUrl, error, code } = await searchParams;
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -27,7 +31,11 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           </p>
         </header>
 
-        <SignInForm callbackUrl={callbackUrl} initialError={error} />
+        <SignInForm
+          callbackUrl={callbackUrl}
+          initialError={error}
+          initialCode={code}
+        />
 
         <p className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}

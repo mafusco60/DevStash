@@ -6,20 +6,32 @@ import { authenticate, signInWithGithub } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+import { ResendVerificationButton } from "../verify-email/ResendVerificationButton";
+
 interface SignInFormProps {
   callbackUrl?: string;
   initialError?: string;
+  initialCode?: string;
 }
 
-export function SignInForm({ callbackUrl, initialError }: SignInFormProps) {
+export function SignInForm({
+  callbackUrl,
+  initialError,
+  initialCode,
+}: SignInFormProps) {
   const [state, formAction, isPending] = useActionState(authenticate, undefined);
-  const errorMessage =
-    state?.error ??
-    (initialError === "CredentialsSignin"
-      ? "Invalid email or password."
-      : initialError
-        ? "Something went wrong. Please try again."
-        : undefined);
+
+  const emailNotVerified =
+    state?.code === "EmailNotVerified" || initialCode === "EmailNotVerified";
+
+  const errorMessage = emailNotVerified
+    ? "Please verify your email before signing in."
+    : (state?.error ??
+      (initialError === "CredentialsSignin"
+        ? "Invalid email or password."
+        : initialError
+          ? "Something went wrong. Please try again."
+          : undefined));
 
   return (
     <div className="space-y-4">
@@ -88,6 +100,10 @@ export function SignInForm({ callbackUrl, initialError }: SignInFormProps) {
           {isPending ? "Signing in…" : "Sign in"}
         </Button>
       </form>
+
+      {emailNotVerified ? (
+        <ResendVerificationButton email={state?.email} />
+      ) : null}
     </div>
   );
 }

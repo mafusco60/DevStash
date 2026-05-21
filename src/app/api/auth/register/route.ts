@@ -2,6 +2,10 @@ import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import {
+  issueVerificationToken,
+  sendVerificationEmail,
+} from "@/lib/email-verification";
 import { prisma } from "@/lib/prisma";
 
 const BCRYPT_ROUNDS = 12;
@@ -57,6 +61,15 @@ export async function POST(request: Request) {
       data: { name, email, password: passwordHash },
       select: { id: true, name: true, email: true },
     });
+
+    try {
+      const token = await issueVerificationToken(user.id);
+      await sendVerificationEmail({ to: user.email, name: user.name, token });
+    } catch (emailError) {
+      // Registration succeeded; the user can re-trigger the email from the
+      // /verify-email page if delivery failed.
+      console.error("[auth/register] verification email failed", emailError);
+    }
 
     return NextResponse.json({ success: true, data: user }, { status: 201 });
   } catch (error) {

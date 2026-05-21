@@ -29,15 +29,16 @@ model User {
   stripeCustomerId     String?
   stripeSubscriptionId String?
 
-  accounts             Account[]
-  sessions             Session[]
-  items                Item[]
-  itemTypes            ItemType[]
-  collections          Collection[]
-  tags                 Tag[]
+  accounts                 Account[]
+  sessions                 Session[]
+  items                    Item[]
+  itemTypes                ItemType[]
+  collections              Collection[]
+  tags                     Tag[]
+  emailVerificationTokens  EmailVerificationToken[]
 
-  createdAt            DateTime     @default(now())
-  updatedAt            DateTime     @updatedAt
+  createdAt                DateTime     @default(now())
+  updatedAt                DateTime     @updatedAt
 }
 
 model Item {
@@ -174,4 +175,24 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// ---------------------------------------------------------------------------
+// Custom verification token for the credentials-based email-verification flow
+// (separate from NextAuth's `VerificationToken`, which is owned by the
+// Email/magic-link provider). The raw token is sent in the verification URL;
+// only its sha256 hash is stored here.
+// ---------------------------------------------------------------------------
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
