@@ -46,9 +46,16 @@ async function main() {
   const expiresAt = new Date(Date.now() + TTL_MS);
 
   await prisma.$transaction([
-    prisma.emailVerificationToken.deleteMany({ where: { userId: user.id } }),
-    prisma.emailVerificationToken.create({
-      data: { userId: user.id, tokenHash, expiresAt },
+    prisma.userVerificationToken.deleteMany({
+      where: { userId: user.id, purpose: "EMAIL_VERIFY" },
+    }),
+    prisma.userVerificationToken.create({
+      data: {
+        userId: user.id,
+        purpose: "EMAIL_VERIFY",
+        tokenHash,
+        expiresAt,
+      },
     }),
   ]);
 

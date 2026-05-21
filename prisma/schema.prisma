@@ -19,30 +19,30 @@ datasource db {
 // ---------------------------------------------------------------------------
 
 model User {
-  id                   String       @id @default(cuid())
-  email                String       @unique
+  id                   String    @id @default(cuid())
+  email                String    @unique
   name                 String?
   emailVerified        DateTime?
   image                String?
   password             String?
-  isPro                Boolean      @default(false)
+  isPro                Boolean   @default(false)
   stripeCustomerId     String?
   stripeSubscriptionId String?
 
-  accounts                 Account[]
-  sessions                 Session[]
-  items                    Item[]
-  itemTypes                ItemType[]
-  collections              Collection[]
-  tags                     Tag[]
-  emailVerificationTokens  EmailVerificationToken[]
+  accounts           Account[]
+  sessions           Session[]
+  items              Item[]
+  itemTypes          ItemType[]
+  collections        Collection[]
+  tags               Tag[]
+  verificationTokens UserVerificationToken[]
 
-  createdAt                DateTime     @default(now())
-  updatedAt                DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Item {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   title       String
   contentType String
   content     String?
@@ -51,23 +51,23 @@ model Item {
   fileSize    Int?
   url         String?
   description String?
-  isFavorite  Boolean  @default(false)
-  isPinned    Boolean  @default(false)
+  isFavorite  Boolean @default(false)
+  isPinned    Boolean @default(false)
   language    String?
 
-  userId       String
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  typeId       String
-  type         ItemType    @relation(fields: [typeId], references: [id], onDelete: Restrict)
+  typeId String
+  type   ItemType @relation(fields: [typeId], references: [id], onDelete: Restrict)
 
   collectionId String?
   collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
 
-  tags         ItemTag[]
+  tags ItemTag[]
 
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([typeId])
@@ -84,40 +84,40 @@ model ItemType {
   color    String?
   isSystem Boolean @default(false)
 
-  userId   String?
-  user     User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  items    Item[]
+  items Item[]
 
   @@index([userId])
 }
 
 model Collection {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   description String?
-  isFavorite  Boolean  @default(false)
+  isFavorite  Boolean @default(false)
 
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  items       Item[]
+  items Item[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([userId, updatedAt])
 }
 
 model Tag {
-  id     String    @id @default(cuid())
-  name   String
+  id   String @id @default(cuid())
+  name String
 
   userId String
-  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  items  ItemTag[]
+  items ItemTag[]
 
   @@unique([userId, name])
   @@index([userId])
@@ -178,21 +178,30 @@ model VerificationToken {
 }
 
 // ---------------------------------------------------------------------------
-// Custom verification token for the credentials-based email-verification flow
-// (separate from NextAuth's `VerificationToken`, which is owned by the
-// Email/magic-link provider). The raw token is sent in the verification URL;
-// only its sha256 hash is stored here.
+// Custom verification token for credentials-flow side-channels (email
+// verification, password reset). Separate from NextAuth's `VerificationToken`
+// (owned by the Email/magic-link provider). The raw token is sent in the
+// emailed URL; only its sha256 hash is stored here. The `purpose` column
+// scopes each token so lookups must match both hash AND purpose — a reset
+// token can never satisfy the email-verify consumer (and vice versa).
 // ---------------------------------------------------------------------------
 
-model EmailVerificationToken {
-  id        String   @id @default(cuid())
-  userId    String
-  tokenHash String   @unique
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+enum VerificationTokenPurpose {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+}
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model UserVerificationToken {
+  id        String                   @id @default(cuid())
+  userId    String
+  tokenHash String                   @unique
+  purpose   VerificationTokenPurpose
+  expiresAt DateTime
+  createdAt DateTime                 @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([userId, purpose])
   @@index([expiresAt])
 }

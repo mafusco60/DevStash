@@ -1,7 +1,11 @@
-import { createHash, randomBytes } from "node:crypto";
-
 import { sendEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
+import {
+  VerificationTokenPurpose,
+  findToken,
+  hashToken,
+  issueToken,
+} from "@/lib/verification-tokens";
 
 export const VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -16,18 +20,7 @@ export function isEmailVerificationEnabled() {
   return !DISABLED_VALUES.has(raw);
 }
 
-export function hashVerificationToken(rawToken: string) {
-  return createHash("sha256").update(rawToken).digest("hex");
-}
-
-function generateVerificationToken() {
-  const token = randomBytes(32).toString("base64url");
-  return {
-    token,
-    tokenHash: hashVerificationToken(token),
-    expiresAt: new Date(Date.now() + VERIFICATION_TOKEN_TTL_MS),
-  };
-}
+export const hashVerificationToken = hashToken;
 
 function buildVerificationUrl(token: string) {
   const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -36,17 +29,12 @@ function buildVerificationUrl(token: string) {
   return url.toString();
 }
 
-// Replace any outstanding tokens with a fresh one so a single user can't
-// accumulate live tokens. Returns the raw token (only ever held in memory).
 export async function issueVerificationToken(userId: string) {
-  const { token, tokenHash, expiresAt } = generateVerificationToken();
-  await prisma.$transaction([
-    prisma.emailVerificationToken.deleteMany({ where: { userId } }),
-    prisma.emailVerificationToken.create({
-      data: { userId, tokenHash, expiresAt },
-    }),
-  ]);
-  return token;
+  return issueToken({
+    userId,
+    purpose: VerificationTokenPurpose.EMAIL_VERIFY,
+    ttlMs: VERIFICATION_TOKEN_TTL_MS,
+  });
 }
 
 export async function sendVerificationEmail({
@@ -99,27 +87,20 @@ export type ConsumeResult =
 export async function consumeVerificationToken(
   rawToken: string
 ): Promise<ConsumeResult> {
-  const tokenHash = hashVerificationToken(rawToken);
-  const record = await prisma.emailVerificationToken.findUnique({
-    where: { tokenHash },
+  const found = await findToken({
+    rawToken,
+    purpose: VerificationTokenPurpose.EMAIL_VERIFY,
   });
 
-  if (!record) return { ok: false, reason: "invalid" };
-
-  if (record.expiresAt.getTime() < Date.now()) {
-    await prisma.emailVerificationToken
-      .delete({ where: { id: record.id } })
-      .catch(() => undefined);
-    return { ok: false, reason: "expired" };
-  }
+  if (!found.ok) return found;
 
   await prisma.$transaction([
     prisma.user.update({
-      where: { id: record.userId },
+      where: { id: found.userId },
       data: { emailVerified: new Date() },
     }),
-    prisma.emailVerificationToken.delete({ where: { id: record.id } }),
+    prisma.userVerificationToken.delete({ where: { id: found.tokenId } }),
   ]);
 
-  return { ok: true, userId: record.userId };
+  return { ok: true, userId: found.userId };
 }

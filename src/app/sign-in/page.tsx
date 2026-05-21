@@ -10,6 +10,7 @@ interface SignInPageProps {
     callbackUrl?: string;
     error?: string;
     code?: string;
+    reset?: string;
   }>;
 }
 
@@ -19,7 +20,8 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
     redirect("/dashboard");
   }
 
-  const { callbackUrl, error, code } = await searchParams;
+  const { callbackUrl, error, code, reset } = await searchParams;
+  const justReset = reset === "1";
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -30,6 +32,15 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             Welcome back to DevStash
           </p>
         </header>
+
+        {justReset ? (
+          <p
+            role="status"
+            className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-center text-sm text-emerald-600 dark:text-emerald-400"
+          >
+            Your password was reset — sign in below.
+          </p>
+        ) : null}
 
         <SignInForm
           callbackUrl={callbackUrl}
