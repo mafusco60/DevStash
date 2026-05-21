@@ -5,6 +5,17 @@ import { prisma } from "@/lib/prisma";
 
 export const VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
+const DISABLED_VALUES = new Set(["false", "0", "off"]);
+
+// Reads EMAIL_VERIFICATION_ENABLED. Defaults to enabled (safe-by-default) so an
+// unset value in production never weakens auth. Set to "false" / "0" / "off"
+// to bypass the entire verification flow during local development.
+export function isEmailVerificationEnabled() {
+  const raw = process.env.EMAIL_VERIFICATION_ENABLED?.trim().toLowerCase();
+  if (!raw) return true;
+  return !DISABLED_VALUES.has(raw);
+}
+
 export function hashVerificationToken(rawToken: string) {
   return createHash("sha256").update(rawToken).digest("hex");
 }
