@@ -1,0 +1,5 @@
+{
+  "webhint.severity": {
+    "no-inline-styles": "off"
+  }
+}
