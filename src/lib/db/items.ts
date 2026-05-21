@@ -127,3 +127,50 @@ export async function getDashboardStats({ userId }: { userId: string }): Promise
   ]);
   return { itemCount, collectionCount, favoriteItemCount, favoriteCollectionCount };
 }
+
+export interface ProfileTypeBreakdown {
+  id: string;
+  name: string;
+  icon: string | null;
+  color: string | null;
+  count: number;
+}
+
+export interface ProfileStats {
+  totalItems: number;
+  totalCollections: number;
+  byType: ProfileTypeBreakdown[];
+}
+
+// Like getSidebarItemTypes but emits every system type (zero-count types kept
+// so the profile breakdown is stable), plus the two roll-up totals the page
+// header needs. Names come straight from `ItemType.name` so callers can
+// title-case them inline; the canonical sidebar order applies here too.
+export async function getProfileStats({ userId }: { userId: string }): Promise<ProfileStats> {
+  const [totalItems, totalCollections, types, counts] = await Promise.all([
+    prisma.item.count({ where: { userId } }),
+    prisma.collection.count({ where: { userId } }),
+    prisma.itemType.findMany({ where: { isSystem: true } }),
+    prisma.item.groupBy({
+      by: ["typeId"],
+      where: { userId },
+      _count: { _all: true },
+    }),
+  ]);
+  const countByType = new Map(counts.map((c) => [c.typeId, c._count._all]));
+  const byName = new Map(types.map((t) => [t.name, t]));
+  const byType: ProfileTypeBreakdown[] = SYSTEM_TYPE_ORDER.flatMap((name) => {
+    const type = byName.get(name);
+    if (!type) return [];
+    return [
+      {
+        id: type.id,
+        name,
+        icon: type.icon,
+        color: type.color,
+        count: countByType.get(type.id) ?? 0,
+      },
+    ];
+  });
+  return { totalItems, totalCollections, byType };
+}
