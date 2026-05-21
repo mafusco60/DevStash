@@ -49,3 +49,7 @@ export async function signInWithGithub(formData: FormData) {
 export async function signOutAction() {
   await signOut({ redirectTo: "/sign-in" });
 }
+
+export async function signOutAfterDeleteAction() {
+  await signOut({ redirectTo: "/sign-in?deleted=1" });
+}

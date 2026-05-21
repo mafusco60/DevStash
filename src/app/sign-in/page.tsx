@@ -11,6 +11,7 @@ interface SignInPageProps {
     error?: string;
     code?: string;
     reset?: string;
+    deleted?: string;
   }>;
 }
 
@@ -20,8 +21,9 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
     redirect("/dashboard");
   }
 
-  const { callbackUrl, error, code, reset } = await searchParams;
+  const { callbackUrl, error, code, reset, deleted } = await searchParams;
   const justReset = reset === "1";
+  const justDeleted = deleted === "1";
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -32,6 +34,15 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             Welcome back to DevStash
           </p>
         </header>
+
+        {justDeleted ? (
+          <p
+            role="status"
+            className="rounded-md border border-border bg-muted/40 px-3 py-2 text-center text-sm text-muted-foreground"
+          >
+            Your account was deleted. Thanks for trying DevStash.
+          </p>
+        ) : null}
 
         {justReset ? (
           <p
