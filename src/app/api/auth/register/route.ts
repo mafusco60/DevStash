@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import {
+  isEmailVerificationEnabled,
   issueVerificationToken,
   sendVerificationEmail,
 } from "@/lib/email-verification";
@@ -57,18 +58,26 @@ export async function POST(request: Request) {
     }
 
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+    const verificationEnabled = isEmailVerificationEnabled();
     const user = await prisma.user.create({
-      data: { name, email, password: passwordHash },
+      data: {
+        name,
+        email,
+        password: passwordHash,
+        emailVerified: verificationEnabled ? null : new Date(),
+      },
       select: { id: true, name: true, email: true },
     });
 
-    try {
-      const token = await issueVerificationToken(user.id);
-      await sendVerificationEmail({ to: user.email, name: user.name, token });
-    } catch (emailError) {
-      // Registration succeeded; the user can re-trigger the email from the
-      // /verify-email page if delivery failed.
-      console.error("[auth/register] verification email failed", emailError);
+    if (verificationEnabled) {
+      try {
+        const token = await issueVerificationToken(user.id);
+        await sendVerificationEmail({ to: user.email, name: user.name, token });
+      } catch (emailError) {
+        // Registration succeeded; the user can re-trigger the email from the
+        // /verify-email page if delivery failed.
+        console.error("[auth/register] verification email failed", emailError);
+      }
     }
 
     return NextResponse.json({ success: true, data: user }, { status: 201 });

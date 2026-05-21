@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import {
+  isEmailVerificationEnabled,
   issueVerificationToken,
   sendVerificationEmail,
 } from "@/lib/email-verification";
@@ -30,6 +31,12 @@ export async function POST(request: Request) {
       { success: false, error: "Enter a valid email address" },
       { status: 400 }
     );
+  }
+
+  // When verification is disabled, this endpoint is intentionally a no-op so
+  // callers still can't enumerate registered emails based on the response.
+  if (!isEmailVerificationEnabled()) {
+    return NextResponse.json({ success: true });
   }
 
   try {
