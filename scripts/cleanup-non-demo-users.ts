@@ -7,7 +7,7 @@
  *
  * Targets whichever Neon branch DATABASE_URL points at. Cascade rules on the
  * schema (User → Account/Session/Item/ItemType/Collection/Tag/
- * EmailVerificationToken, Item → ItemTag) handle the dependent rows.
+ * UserVerificationToken, Item → ItemTag) handle the dependent rows.
  */
 import "dotenv/config";
 
@@ -49,7 +49,7 @@ async function main() {
           tags: true,
           accounts: true,
           sessions: true,
-          emailVerificationTokens: true,
+          verificationTokens: true,
         },
       },
     },
